@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Monetag Ads Lengkap - Telegram Mini App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Telegram SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Monetag SDK -->
+  <script src='//whephiwums.com/sdk.js' data-zone='9291621' data-sdk='show_9291621'></script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 30px;
+      text-align: center;
+      background: #f7f7f7;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin: 10px auto;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: block;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .interstitial-btn {
+      background-color: #2196F3;
+      color: white;
+    }
+
+    .reward-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .popup-btn {
+      background-color: #FF9800;
+      color: white;
+    }
+
+    .status {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>🎯 UKI Ads 2 Lengkap</h2>
+  <p>Chat ID Anda: <span id="chatIdText">Memuat...</span></p>
+  <p>Iklan Ditonton: <span id="adsCount">0</span></p>
+
+  <button class="reward-btn" onclick="showRewardedInterstitial()">Rewarded Interstitial</button>
+  <button class="popup-btn" onclick="showRewardedPopup()">Rewarded Popup</button>
+  <button class="interstitial-btn" onclick="showInAppInterstitial()">In-App Interstitial</button>
+
+  <div class="status" id="statusMessage">Status: Menunggu aksi pengguna...</div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let chatId = tg.initDataUnsafe?.user?.id || null;
+    let adsCount = 0;
+
+    document.getElementById("chatIdText").innerText = chatId ?? "Tidak tersedia";
+
+    const status = document.getElementById("statusMessage");
+    const adsCountEl = document.getElementById("adsCount");
+
+    if (chatId) {
+      ambilAdsCount();
+    }
+
+
+    async function ambilAdsCount() {
+      if (!chatId) return;
+
+      try {
+        const response = await fetch("simpan_ads.php?chat_id=" + chatId);
+        const data = await response.json();
+
+        if (data.ads_count !== undefined) {
+          adsCount = data.ads_count;
+          adsCountEl.textContent = adsCount;
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data:", err);
+      }
+    }
+
+
+    async function kirimDataKeServer() {
+      if (!chatId) return;
+
+      await fetch("simpan_ads.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          ads_count: adsCount
+        })
+      });
+    }
+
+    function showRewardedInterstitial() {
+      status.textContent = "Menayangkan Rewarded Interstitial...";
+      show_9291621().then(() => {
+        status.textContent = "Rewarded Interstitial selesai ditonton!";
+        adsCount++;
+        adsCountEl.textContent = adsCount;
+        kirimDataKeServer();
+      }).catch(err => {
+        console.error(err);
+        status.textContent = "Gagal menampilkan Rewarded Interstitial.";
+      });
+    }
+
+    function showRewardedPopup() {
+      status.textContent = "Menayangkan Rewarded Popup...";
+      show_9291621('pop').then(() => {
+        status.textContent = "Rewarded Popup selesai ditonton!";
+        adsCount++;
+        adsCountEl.textContent = adsCount;
+        kirimDataKeServer();
+      }).catch(err => {
+        console.error(err);
+        status.textContent = "Gagal menampilkan Rewarded Popup.";
+      });
+    }
+
+    function showInAppInterstitial() {
+      status.textContent = "Mengaktifkan In-App Interstitial...";
+      show_9291621({
+        type: 'inApp',
+        inAppSettings: {
+          frequency: 6,
+          capping: 0.01,
+          interval: 2,
+          timeout: 1,
+          everyPage: false
+        }
+      });
+      status.textContent = "In-App Interstitial aktif.";
+    }
+  </script>
+</body>
+
+</html>
